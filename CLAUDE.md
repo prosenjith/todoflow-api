@@ -58,7 +58,13 @@ New features should follow this pattern: add an `Application.configureX()` funct
 | PUT | `/todos/{id}` | Partial update title/completed |
 | DELETE | `/todos/{id}` | Delete (204 on success, 404 if missing) |
 
-`TodoRepository` is instantiated once in `configureRouting()` and passed into `todoRoutes()` — there is no DI framework.
+**Auth feature:** Registration and login backed by the `Users` table. No JWT yet — login returns the public `User` object only.
+- `models/User.kt` — `User`, `RegisterRequest`, `LoginRequest`, `AuthResponse` (token field present, unused until JWT is added)
+- `repositories/UserRepository.kt` — `Users` table + `create`, `findByUsername` (returns `Pair<User, String>` to expose hash only within the service layer), `findById`
+- `services/AuthService.kt` — `register` (checks username uniqueness, hashes password, persists), `login` (looks up user, verifies hash; throws `ValidationException("Invalid credentials")` for both not-found and wrong-password to avoid enumeration), `hashPassword`, `verifyPassword`
+- `routes/AuthRoutes.kt` — `POST /register` (201 + `User`), `POST /login` (200 + `User`)
+
+All instances are wired in `configureRouting()` — there is no DI framework.
 
 **Testing:** Uses `ktor-server-test-host` via the `testApplication { }` DSL. The `configure()` call inside a test block loads the default `application.yaml` modules, so tests run against the real module stack.
 
