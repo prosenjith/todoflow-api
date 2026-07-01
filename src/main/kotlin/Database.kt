@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.repositories.Todos
+import com.example.repositories.Users
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -18,6 +19,6 @@ fun Application.configureDatabase() {
         password = password
     )
     transaction {
-        SchemaUtils.create(Todos)
+        SchemaUtils.create(Todos, Users)
     }
 }
