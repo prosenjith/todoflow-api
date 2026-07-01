@@ -20,6 +20,7 @@ This is a minimal Ktor 3.x server using the **Netty** engine, configured via `ap
 **Module pattern:** Each concern is an extension function on `Application` registered in `application.yaml` under `ktor.application.modules`. Currently:
 - `configureSerialization()` — installs `ContentNegotiation` with `kotlinx.serialization` JSON
 - `configureDatabase()` — connects to PostgreSQL (env-var driven), creates the schema via Exposed
+- `configureStatusPages()` — installs Ktor's `StatusPages` plugin; maps app exceptions to HTTP responses (see below)
 - `configureRouting()` — instantiates `TodoRepository`, wraps it in `TodoService`, and mounts all routes
 
 New features should follow this pattern: add an `Application.configureX()` function in its own file and register it in `application.yaml`.
@@ -36,8 +37,15 @@ New features should follow this pattern: add an `Application.configureX()` funct
 **Todo feature:** The main domain feature is a CRUD Todo API backed by PostgreSQL via Exposed. The layers are:
 - `models/Todo.kt` — `@Serializable` data classes: `Todo`, `CreateTodoRequest`, `UpdateTodoRequest`
 - `repositories/TodoRepository.kt` — `Todos` table definition + all SQL operations wrapped in `transaction { }` blocks; IDs are random UUIDs
-- `services/TodoService.kt` — business logic and validation; calls `TodoRepository`; has zero Ktor/HTTP imports. Throws `IllegalArgumentException` (→ 400) for invalid input and `NoSuchElementException` (→ 404) for missing records. Validation rules: title must not be blank after trimming, max 200 chars; whitespace is trimmed before saving.
-- `routes/TodoRoutes.kt` — `Route` extension function `todoRoutes(service)` defining the REST endpoints below; only handles HTTP parsing/response and catches service exceptions
+- `services/TodoService.kt` — business logic and validation; calls `TodoRepository`; has zero Ktor/HTTP imports. Throws `ValidationException` (→ 400) for invalid input and `NotFoundException` (→ 404) for missing records. Validation rules: title must not be blank after trimming, max 200 chars; whitespace is trimmed before saving.
+- `routes/TodoRoutes.kt` — `Route` extension function `todoRoutes(service)` defining the REST endpoints below; only handles request parsing and success responses — exceptions propagate to `StatusPages`
+
+**Error handling:** Centralized in `plugins/StatusPages.kt` via Ktor's `StatusPages` plugin. Exception-to-HTTP mapping:
+- `exceptions/AppExceptions.kt` defines `ValidationException` and `NotFoundException` (both extend `Exception`)
+- `ValidationException` → 400 with `{ "message": "..." }`
+- `NotFoundException` → 404 with `{ "message": "..." }`
+- Any other `Throwable` → 500 with `{ "message": "Internal server error" }` (detail not leaked)
+- All error responses are JSON `ErrorResponse(message)` objects
 
 | Method | Path | Description |
 |--------|------|-------------|
