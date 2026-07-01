@@ -6,4 +6,5 @@ ktor:
       - com.example.SerializationKt.configureSerialization
       - com.example.DatabaseKt.configureDatabase
       - com.example.plugins.StatusPagesKt.configureStatusPages
+      - com.example.plugins.SecurityKt.configureSecurity
       - com.example.RoutingKt.configureRouting

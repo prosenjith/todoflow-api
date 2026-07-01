@@ -21,7 +21,8 @@ This is a minimal Ktor 3.x server using the **Netty** engine, configured via `ap
 - `configureSerialization()` — installs `ContentNegotiation` with `kotlinx.serialization` JSON
 - `configureDatabase()` — connects to PostgreSQL (env-var driven), creates the schema via Exposed
 - `configureStatusPages()` — installs Ktor's `StatusPages` plugin; maps app exceptions to HTTP responses (see below)
-- `configureRouting()` — instantiates `TodoRepository`, wraps it in `TodoService`, and mounts all routes
+- `configureSecurity()` — installs Ktor's `Authentication` plugin with a `jwt("auth-jwt")` block; verifies token signature and expiry, validates `userId` claim presence
+- `configureRouting()` — instantiates repositories, services, and mounts all routes
 
 New features should follow this pattern: add an `Application.configureX()` function in its own file and register it in `application.yaml`.
 
@@ -58,11 +59,14 @@ New features should follow this pattern: add an `Application.configureX()` funct
 | PUT | `/todos/{id}` | Partial update title/completed |
 | DELETE | `/todos/{id}` | Delete (204 on success, 404 if missing) |
 
-**Auth feature:** Registration and login backed by the `Users` table. No JWT yet — login returns the public `User` object only.
-- `models/User.kt` — `User`, `RegisterRequest`, `LoginRequest`, `AuthResponse` (token field present, unused until JWT is added)
+**Auth feature:** Registration and login backed by the `Users` table. Login issues a JWT; no routes are protected yet.
+- `models/User.kt` — `User`, `RegisterRequest`, `LoginRequest`, `AuthResponse(token, user)`
 - `repositories/UserRepository.kt` — `Users` table + `create`, `findByUsername` (returns `Pair<User, String>` to expose hash only within the service layer), `findById`
-- `services/AuthService.kt` — `register` (checks username uniqueness, hashes password, persists), `login` (looks up user, verifies hash; throws `ValidationException("Invalid credentials")` for both not-found and wrong-password to avoid enumeration), `hashPassword`, `verifyPassword`
-- `routes/AuthRoutes.kt` — `POST /register` (201 + `User`), `POST /login` (200 + `User`)
+- `services/AuthService.kt` — `register` (uniqueness check, bcrypt hash, persist), `login` (credential lookup + hash verify; same error for not-found and wrong-password to prevent enumeration; returns `AuthResponse`), `generateToken` (HMAC256-signed JWT, 24h expiry, `userId` claim), `hashPassword`, `verifyPassword`
+- `routes/AuthRoutes.kt` — `POST /register` (201 + `User`), `POST /login` (200 + `AuthResponse { token, user }`)
+- `plugins/Security.kt` — installs `Authentication` with `jwt("auth-jwt")`; validates signature, expiry, and `userId` claim; no routes protected yet — wrap route blocks with `authenticate("auth-jwt") { }` when ready
+
+**JWT:** Tokens are HMAC256-signed with a `userId` claim and 24-hour expiry. Secret read from `JWT_SECRET` env var; fallback `"dev-only-secret-do-not-use-in-production"` is clearly marked — **must be overridden in production**. Dependency: `ktor-server-auth-jwt` (BOM-managed).
 
 All instances are wired in `configureRouting()` — there is no DI framework.
 
