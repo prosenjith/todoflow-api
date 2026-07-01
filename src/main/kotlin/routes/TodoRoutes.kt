@@ -2,66 +2,59 @@ package com.example.routes
 
 import com.example.models.CreateTodoRequest
 import com.example.models.UpdateTodoRequest
-import com.example.repositories.TodoRepository
+import com.example.services.TodoService
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.todoRoutes(repository: TodoRepository) {
+fun Route.todoRoutes(service: TodoService) {
     route("/todos") {
 
-        // GET /todos
         get {
-            call.respond(HttpStatusCode.OK, repository.getAll())
+            call.respond(HttpStatusCode.OK, service.getAll())
         }
 
-        // GET /todos/{id}
         get("/{id}") {
             val id = call.parameters["id"]
                 ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing id")
-
-            val todo = repository.getById(id)
-                ?: return@get call.respond(HttpStatusCode.NotFound, "Todo not found")
-
-            call.respond(HttpStatusCode.OK, todo)
+            try {
+                call.respond(HttpStatusCode.OK, service.getById(id))
+            } catch (e: NoSuchElementException) {
+                call.respond(HttpStatusCode.NotFound, e.message ?: "Todo not found")
+            }
         }
 
-        // POST /todos
         post {
             val request = call.receive<CreateTodoRequest>()
-
-            if (request.title.isBlank()) {
-                return@post call.respond(HttpStatusCode.BadRequest, "Title cannot be blank")
+            try {
+                call.respond(HttpStatusCode.Created, service.create(request))
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid request")
             }
-
-            val created = repository.create(request.title)
-            call.respond(HttpStatusCode.Created, created)
         }
 
-        // PUT /todos/{id}
         put("/{id}") {
             val id = call.parameters["id"]
                 ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing id")
-
             val request = call.receive<UpdateTodoRequest>()
-
-            val updated = repository.update(id, request.title, request.completed)
-                ?: return@put call.respond(HttpStatusCode.NotFound, "Todo not found")
-
-            call.respond(HttpStatusCode.OK, updated)
+            try {
+                call.respond(HttpStatusCode.OK, service.update(id, request))
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid request")
+            } catch (e: NoSuchElementException) {
+                call.respond(HttpStatusCode.NotFound, e.message ?: "Todo not found")
+            }
         }
 
-        // DELETE /todos/{id}
         delete("/{id}") {
             val id = call.parameters["id"]
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing id")
-
-            val deleted = repository.delete(id)
-            if (deleted) {
+            try {
+                service.delete(id)
                 call.respond(HttpStatusCode.NoContent)
-            } else {
-                call.respond(HttpStatusCode.NotFound, "Todo not found")
+            } catch (e: NoSuchElementException) {
+                call.respond(HttpStatusCode.NotFound, e.message ?: "Todo not found")
             }
         }
     }
