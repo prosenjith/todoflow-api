@@ -21,6 +21,9 @@ dependencies {
     implementation(ktorLibs.server.core)
     implementation(ktorLibs.server.netty)
     implementation(libs.logback.classic)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.h2)
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)

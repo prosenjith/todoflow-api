@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew build      # compile and package
 ./gradlew run        # start the server (listens on :8080)
 ./gradlew test       # run all tests
-./gradlew test --tests "com.example.ServerTest.test root endpoint"  # run a single test
+./gradlew test --tests "com.example.ServerTest.test todos endpoint returns 200"  # run a single test
 ```
 
 ## Architecture
@@ -19,13 +19,21 @@ This is a minimal Ktor 3.x server using the **Netty** engine, configured via `ap
 
 **Module pattern:** Each concern is an extension function on `Application` registered in `application.yaml` under `ktor.application.modules`. Currently:
 - `configureSerialization()` — installs `ContentNegotiation` with `kotlinx.serialization` JSON
+- `configureDatabase()` — connects to H2, starts the TCP + web console servers, creates the schema
 - `configureRouting()` — instantiates `TodoRepository` and mounts all routes
 
 New features should follow this pattern: add an `Application.configureX()` function in its own file and register it in `application.yaml`.
 
-**Todo feature:** The main domain feature is a CRUD Todo API backed by an in-memory `ConcurrentHashMap` (no database). The layers are:
+**Database:** H2 in-memory database accessed via Jetbrains Exposed ORM.
+- JDBC URL: `jdbc:h2:mem:todos;DB_CLOSE_DELAY=-1` — data resets on server restart
+- H2 TCP server on port `9092`, web console on port `8082`
+- To inspect data: open `http://localhost:8082`, set JDBC URL to `jdbc:h2:tcp://localhost:9092/mem:todos`, user `sa`, password blank
+- Schema is defined in `TodoRepository.kt` as the `Todos` `Table` object; `SchemaUtils.create(Todos)` runs on startup in `configureDatabase()`
+- Exposed version: `0.61.0`; H2 version: `2.3.232`
+
+**Todo feature:** The main domain feature is a CRUD Todo API backed by H2 via Exposed. The layers are:
 - `models/Todo.kt` — `@Serializable` data classes: `Todo`, `CreateTodoRequest`, `UpdateTodoRequest`
-- `repositories/TodoRepository.kt` — in-memory store; all operations are thread-safe via `ConcurrentHashMap`; IDs are random UUIDs
+- `repositories/TodoRepository.kt` — `Todos` table definition + all SQL operations wrapped in `transaction { }` blocks; IDs are random UUIDs
 - `routes/TodoRoutes.kt` — `Route` extension function `todoRoutes(repository)` defining the REST endpoints below
 
 | Method | Path | Description |
