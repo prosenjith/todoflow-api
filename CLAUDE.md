@@ -19,17 +19,19 @@ This is a minimal Ktor 3.x server using the **Netty** engine, configured via `ap
 
 **Module pattern:** Each concern is an extension function on `Application` registered in `application.yaml` under `ktor.application.modules`. Currently:
 - `configureSerialization()` — installs `ContentNegotiation` with `kotlinx.serialization` JSON
-- `configureDatabase()` — connects to H2, starts the TCP + web console servers, creates the schema
+- `configureDatabase()` — connects to PostgreSQL (env-var driven), creates the schema via Exposed
 - `configureRouting()` — instantiates `TodoRepository` and mounts all routes
 
 New features should follow this pattern: add an `Application.configureX()` function in its own file and register it in `application.yaml`.
 
-**Database:** H2 in-memory database accessed via Jetbrains Exposed ORM.
-- JDBC URL: `jdbc:h2:mem:todos;DB_CLOSE_DELAY=-1` — data resets on server restart
-- H2 TCP server on port `9092`, web console on port `8082`
-- To inspect data: open `http://localhost:8082`, set JDBC URL to `jdbc:h2:tcp://localhost:9092/mem:todos`, user `sa`, password blank
+**Database:** PostgreSQL accessed via Jetbrains Exposed ORM.
+- Connection is configured via environment variables with local-dev fallbacks:
+  - `DATABASE_URL` — default `jdbc:postgresql://localhost:5432/todos`
+  - `DATABASE_USER` — default `postgres`
+  - `DATABASE_PASSWORD` — default `devpassword`
+- Local dev: PostgreSQL on `localhost:5432`, database `todos`, user `postgres`, password `devpassword`
 - Schema is defined in `TodoRepository.kt` as the `Todos` `Table` object; `SchemaUtils.create(Todos)` runs on startup in `configureDatabase()`
-- Exposed version: `0.61.0`; H2 version: `2.3.232`
+- Exposed version: `0.61.0`; PostgreSQL JDBC driver: `42.7.4`; H2 `2.3.232` is kept as a dependency but not connected
 
 **Todo feature:** The main domain feature is a CRUD Todo API backed by H2 via Exposed. The layers are:
 - `models/Todo.kt` — `@Serializable` data classes: `Todo`, `CreateTodoRequest`, `UpdateTodoRequest`
