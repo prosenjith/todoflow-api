@@ -19,6 +19,7 @@ fun Application.configureDatabase() {
         password = password
     )
     transaction {
-        SchemaUtils.create(Todos, Users)
+        @Suppress("DEPRECATION")
+        SchemaUtils.createMissingTablesAndColumns(Todos, Users)
     }
 }

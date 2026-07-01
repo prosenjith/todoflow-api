@@ -32,17 +32,17 @@ New features should follow this pattern: add an `Application.configureX()` funct
   - `DATABASE_USER` — default `postgres`
   - `DATABASE_PASSWORD` — default `devpassword`
 - Local dev: PostgreSQL on `localhost:5432`, database `todos`, user `postgres`, password `devpassword`
-- Schema is defined as `Table` objects in their respective repository files; `SchemaUtils.create(Todos, Users)` runs on startup in `configureDatabase()`
-- `Todos` table: `id` (PK), `title`, `completed`
+- Schema is defined as `Table` objects in their respective repository files; `SchemaUtils.createMissingTablesAndColumns(Todos, Users)` runs on startup in `configureDatabase()` — creates new tables and adds missing columns on existing tables. Note: Exposed 0.61 marks this deprecated; for production use Flyway or Liquibase instead.
+- `Todos` table: `id` (PK), `title`, `completed`, `user_id` (FK to users)
 - `Users` table: `id` (PK), `username` (unique), `password_hash`
 - Passwords are hashed with bcrypt via jBCrypt (`org.mindrot:jbcrypt:0.4`); `AuthService.hashPassword` / `verifyPassword` are the only call sites
 - Exposed version: `0.61.0`; PostgreSQL JDBC driver: `42.7.4`; H2 `2.3.232` is kept as a dependency but not connected
 
 **Todo feature:** The main domain feature is a CRUD Todo API backed by PostgreSQL via Exposed. The layers are:
 - `models/Todo.kt` — `@Serializable` data classes: `Todo`, `CreateTodoRequest`, `UpdateTodoRequest`
-- `repositories/TodoRepository.kt` — `Todos` table definition + all SQL operations wrapped in `transaction { }` blocks; IDs are random UUIDs
-- `services/TodoService.kt` — business logic and validation; calls `TodoRepository`; has zero Ktor/HTTP imports. Throws `ValidationException` (→ 400) for invalid input and `NotFoundException` (→ 404) for missing records. Validation rules: title must not be blank after trimming, max 200 chars; whitespace is trimmed before saving.
-- `routes/TodoRoutes.kt` — `Route` extension function `todoRoutes(service)` defining the REST endpoints below; only handles request parsing and success responses — exceptions propagate to `StatusPages`
+- `repositories/TodoRepository.kt` — `Todos` table definition + all SQL operations wrapped in `transaction { }` blocks; IDs are random UUIDs; every query filters by `userId` so cross-user access is impossible at the SQL level
+- `services/TodoService.kt` — business logic and validation; threads `userId` through all repository calls; throws `NotFoundException("Todo not found")` for both missing and wrong-owner todos (ownership not revealed to caller); no Ktor/HTTP imports
+- `routes/TodoRoutes.kt` — all routes wrapped in `authenticate("auth-jwt") { }`; `userId` extracted from `call.principal<JWTPrincipal>()` — never from request body or params
 
 **Error handling:** Centralized in `plugins/StatusPages.kt` via Ktor's `StatusPages` plugin. Exception-to-HTTP mapping:
 - `exceptions/AppExceptions.kt` defines `ValidationException` and `NotFoundException` (both extend `Exception`)
@@ -51,13 +51,15 @@ New features should follow this pattern: add an `Application.configureX()` funct
 - Any other `Throwable` → 500 with `{ "message": "Internal server error" }` (detail not leaked)
 - All error responses are JSON `ErrorResponse(message)` objects
 
+All `/todos` routes require `Authorization: Bearer <token>`. Todos are scoped to the authenticated user — a user can only see and modify their own todos.
+
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/todos` | List all todos |
-| GET | `/todos/{id}` | Get by id (404 if missing) |
-| POST | `/todos` | Create (400 if title blank) |
-| PUT | `/todos/{id}` | Partial update title/completed |
-| DELETE | `/todos/{id}` | Delete (204 on success, 404 if missing) |
+| GET | `/todos` | List caller's todos |
+| GET | `/todos/{id}` | Get by id (404 if missing or owned by another user) |
+| POST | `/todos` | Create todo for caller (400 if title blank/too long) |
+| PUT | `/todos/{id}` | Partial update title/completed (404 if not owned) |
+| DELETE | `/todos/{id}` | Delete (204 on success, 404 if not owned) |
 
 **Auth feature:** Registration and login backed by the `Users` table. Login issues a JWT; no routes are protected yet.
 - `models/User.kt` — `User`, `RegisterRequest`, `LoginRequest`, `AuthResponse(token, user)`
