@@ -19,9 +19,24 @@ This is a minimal Ktor 3.x server using the **Netty** engine, configured via `ap
 
 **Module pattern:** Each concern is an extension function on `Application` registered in `application.yaml` under `ktor.application.modules`. Currently:
 - `configureSerialization()` — installs `ContentNegotiation` with `kotlinx.serialization` JSON
-- `configureRouting()` — defines HTTP routes
+- `configureRouting()` — instantiates `TodoRepository` and mounts all routes
 
 New features should follow this pattern: add an `Application.configureX()` function in its own file and register it in `application.yaml`.
+
+**Todo feature:** The main domain feature is a CRUD Todo API backed by an in-memory `ConcurrentHashMap` (no database). The layers are:
+- `models/Todo.kt` — `@Serializable` data classes: `Todo`, `CreateTodoRequest`, `UpdateTodoRequest`
+- `repositories/TodoRepository.kt` — in-memory store; all operations are thread-safe via `ConcurrentHashMap`; IDs are random UUIDs
+- `routes/TodoRoutes.kt` — `Route` extension function `todoRoutes(repository)` defining the REST endpoints below
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/todos` | List all todos |
+| GET | `/todos/{id}` | Get by id (404 if missing) |
+| POST | `/todos` | Create (400 if title blank) |
+| PUT | `/todos/{id}` | Partial update title/completed |
+| DELETE | `/todos/{id}` | Delete (204 on success, 404 if missing) |
+
+`TodoRepository` is instantiated once in `configureRouting()` and passed into `todoRoutes()` — there is no DI framework.
 
 **Testing:** Uses `ktor-server-test-host` via the `testApplication { }` DSL. The `configure()` call inside a test block loads the default `application.yaml` modules, so tests run against the real module stack.
 
