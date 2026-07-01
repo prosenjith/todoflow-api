@@ -31,7 +31,10 @@ New features should follow this pattern: add an `Application.configureX()` funct
   - `DATABASE_USER` — default `postgres`
   - `DATABASE_PASSWORD` — default `devpassword`
 - Local dev: PostgreSQL on `localhost:5432`, database `todos`, user `postgres`, password `devpassword`
-- Schema is defined in `TodoRepository.kt` as the `Todos` `Table` object; `SchemaUtils.create(Todos)` runs on startup in `configureDatabase()`
+- Schema is defined as `Table` objects in their respective repository files; `SchemaUtils.create(Todos, Users)` runs on startup in `configureDatabase()`
+- `Todos` table: `id` (PK), `title`, `completed`
+- `Users` table: `id` (PK), `username` (unique), `password_hash`
+- Passwords are hashed with bcrypt via jBCrypt (`org.mindrot:jbcrypt:0.4`); `AuthService.hashPassword` / `verifyPassword` are the only call sites
 - Exposed version: `0.61.0`; PostgreSQL JDBC driver: `42.7.4`; H2 `2.3.232` is kept as a dependency but not connected
 
 **Todo feature:** The main domain feature is a CRUD Todo API backed by PostgreSQL via Exposed. The layers are:

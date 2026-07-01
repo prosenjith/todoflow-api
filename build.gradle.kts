@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.exposed.jdbc)
     implementation(libs.h2)
     implementation(libs.postgresql)
+    implementation(libs.jbcrypt)
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
