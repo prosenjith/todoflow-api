@@ -1,7 +1,7 @@
-package com.example
+package com.prosenjith.todoflow
 
 
-import com.example.models.*
+import com.prosenjith.todoflow.models.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*

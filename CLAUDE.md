@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew build      # compile and package
 ./gradlew run        # start the server (listens on :8080)
 ./gradlew test       # run all tests
-./gradlew test --tests "com.example.ServerTest.test todos endpoint returns 200"  # run a single test
+./gradlew test --tests "com.prosenjith.todoflow.ServerTest.test todos endpoint returns 200"  # run a single test
 ```
 
 ## Architecture

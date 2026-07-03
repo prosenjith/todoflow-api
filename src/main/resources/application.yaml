@@ -3,8 +3,8 @@ ktor:
     port: 8080
   application:
     modules:
-      - com.example.SerializationKt.configureSerialization
-      - com.example.DatabaseKt.configureDatabase
-      - com.example.plugins.StatusPagesKt.configureStatusPages
-      - com.example.plugins.SecurityKt.configureSecurity
-      - com.example.RoutingKt.configureRouting
+      - com.prosenjith.todoflow.SerializationKt.configureSerialization
+      - com.prosenjith.todoflow.DatabaseKt.configureDatabase
+      - com.prosenjith.todoflow.plugins.StatusPagesKt.configureStatusPages
+      - com.prosenjith.todoflow.plugins.SecurityKt.configureSecurity
+      - com.prosenjith.todoflow.RoutingKt.configureRouting

@@ -1,8 +1,8 @@
-package com.example.routes
+package com.prosenjith.todoflow.routes
 
-import com.example.models.LoginRequest
-import com.example.models.RegisterRequest
-import com.example.services.AuthService
+import com.prosenjith.todoflow.models.LoginRequest
+import com.prosenjith.todoflow.models.RegisterRequest
+import com.prosenjith.todoflow.services.AuthService
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*

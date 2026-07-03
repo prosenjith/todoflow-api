@@ -1,6 +1,6 @@
-package com.example.repositories
+package com.prosenjith.todoflow.repositories
 
-import com.example.models.User
+import com.prosenjith.todoflow.models.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID

@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-group = "com.example"
+group = "com.prosenjith.todoflow"
 version = "1.0.0-SNAPSHOT"
 
 application {

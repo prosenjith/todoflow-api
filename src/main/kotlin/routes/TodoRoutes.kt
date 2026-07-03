@@ -1,9 +1,9 @@
-package com.example.routes
+package com.prosenjith.todoflow.routes
 
-import com.example.exceptions.ValidationException
-import com.example.models.CreateTodoRequest
-import com.example.models.UpdateTodoRequest
-import com.example.services.TodoService
+import com.prosenjith.todoflow.exceptions.ValidationException
+import com.prosenjith.todoflow.models.CreateTodoRequest
+import com.prosenjith.todoflow.models.UpdateTodoRequest
+import com.prosenjith.todoflow.services.TodoService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

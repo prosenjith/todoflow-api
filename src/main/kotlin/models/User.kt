@@ -1,4 +1,4 @@
-package com.example.models
+package com.prosenjith.todoflow.models
 
 import kotlinx.serialization.Serializable
 

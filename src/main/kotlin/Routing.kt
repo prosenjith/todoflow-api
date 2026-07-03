@@ -1,11 +1,11 @@
-package com.example
+package com.prosenjith.todoflow
 
-import com.example.repositories.TodoRepository
-import com.example.repositories.UserRepository
-import com.example.routes.authRoutes
-import com.example.routes.todoRoutes
-import com.example.services.AuthService
-import com.example.services.TodoService
+import com.prosenjith.todoflow.repositories.TodoRepository
+import com.prosenjith.todoflow.repositories.UserRepository
+import com.prosenjith.todoflow.routes.authRoutes
+import com.prosenjith.todoflow.routes.todoRoutes
+import com.prosenjith.todoflow.services.AuthService
+import com.prosenjith.todoflow.services.TodoService
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 

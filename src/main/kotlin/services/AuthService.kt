@@ -1,11 +1,11 @@
-package com.example.services
+package com.prosenjith.todoflow.services
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.example.exceptions.ValidationException
-import com.example.models.AuthResponse
-import com.example.models.User
-import com.example.repositories.UserRepository
+import com.prosenjith.todoflow.exceptions.ValidationException
+import com.prosenjith.todoflow.models.AuthResponse
+import com.prosenjith.todoflow.models.User
+import com.prosenjith.todoflow.repositories.UserRepository
 import org.mindrot.jbcrypt.BCrypt
 import java.util.Date
 

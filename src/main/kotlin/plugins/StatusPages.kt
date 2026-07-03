@@ -1,7 +1,7 @@
-package com.example.plugins
+package com.prosenjith.todoflow.plugins
 
-import com.example.exceptions.NotFoundException
-import com.example.exceptions.ValidationException
+import com.prosenjith.todoflow.exceptions.NotFoundException
+import com.prosenjith.todoflow.exceptions.ValidationException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*

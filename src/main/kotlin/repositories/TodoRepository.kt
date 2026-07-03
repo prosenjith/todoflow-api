@@ -1,6 +1,6 @@
-package com.example.repositories
+package com.prosenjith.todoflow.repositories
 
-import com.example.models.Todo
+import com.prosenjith.todoflow.models.Todo
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction

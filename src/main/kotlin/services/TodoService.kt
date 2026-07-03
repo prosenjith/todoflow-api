@@ -1,11 +1,11 @@
-package com.example.services
+package com.prosenjith.todoflow.services
 
-import com.example.exceptions.NotFoundException
-import com.example.exceptions.ValidationException
-import com.example.models.CreateTodoRequest
-import com.example.models.Todo
-import com.example.models.UpdateTodoRequest
-import com.example.repositories.TodoRepository
+import com.prosenjith.todoflow.exceptions.NotFoundException
+import com.prosenjith.todoflow.exceptions.ValidationException
+import com.prosenjith.todoflow.models.CreateTodoRequest
+import com.prosenjith.todoflow.models.Todo
+import com.prosenjith.todoflow.models.UpdateTodoRequest
+import com.prosenjith.todoflow.repositories.TodoRepository
 
 private const val MAX_TITLE_LENGTH = 200
 

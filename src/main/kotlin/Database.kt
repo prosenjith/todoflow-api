@@ -1,7 +1,7 @@
-package com.example
+package com.prosenjith.todoflow
 
-import com.example.repositories.Todos
-import com.example.repositories.Users
+import com.prosenjith.todoflow.repositories.Todos
+import com.prosenjith.todoflow.repositories.Users
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils

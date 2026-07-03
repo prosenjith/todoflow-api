@@ -18,5 +18,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ktor-sample"
+rootProject.name = "todoflow-api"
 
